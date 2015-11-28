@@ -1,13 +1,29 @@
-import webapp2, random
+import webapp2, random, logging
 
 from settings import JINJA_ENVIRONMENT
 from google.appengine.api import users
+from models.user import *
+
 
 class RootHandler(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
 
         if user:
+            # Create a query for searching the User Entities
+            query = User.query()
+
+            # Filter by the google appengine user id property.
+            query.filter(User.google_id == user.user_id())
+            active_user = query.fetch(1)
+
+            if not active_user:
+                # If we couldn't find a user it means that is the first time it uses the application.
+                # We just need to create a new entity with the get_current_user() information.
+                new_user = User(email = user.email(), username = user.nickname(), google_id = user.user_id())
+                new_user.put()
+                logging.info("New user created. Email address is: %s", new_user.email)
+
             template_vars = {
                 'user' : user,
                 'logout_url' : users.create_logout_url('/welcome'),
