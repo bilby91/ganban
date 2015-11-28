@@ -28,13 +28,13 @@ class UpdateCardHandler(webapp2.RequestHandler):
 
 class CreateCardHandler(webapp2.RequestHandler):
     def post(self):
-        card = Card()
+        card = Card(status=self.request.get('status'), content=self.request.get('status'))
         card.put()
 
         self.response.out.write(json.dumps(card.to_dict()))
 
 class DestroyCardHandler(webapp2.RequestHandler):
-    def destroy(self):
+    def destroy(self, card_id):
         ndb.Key('Card', int(card_id)).delete()
 
-        self.response.out.write(json.dumps({}}))
+        self.response.out.write(json.dumps({}))
