@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% block head %}
+    <link type="text/css" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet">
+    <link type="text/css" href="stylesheets/dragula.min.css" rel="stylesheet">
+    <link type="text/css" href="stylesheets/styles.css" rel="stylesheet">
+    <title> - Ganban - </title>
+  {% endblock %}
+</head>
+<body>
+    <header>
+      {% block header %}
+      {% endblock %}
+    </header>
+    <main>
+      {% block content %}
+      {% endblock %}
+    </main>
+    <footer>
+      {% block footer %}
+      {% endblock %}
+    </footer>
+    {% block js %}
+      <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+      <script type="text/javascript" src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+      <script type="text/javascript" src="scripts/dragula.min.js"></script>
+      <script type="text/javascript" src="scripts/app.js"></script>
+    {% endblock %}
+</body>
+</html>
