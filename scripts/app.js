@@ -2,33 +2,68 @@
 
   var Ganban = (function () {
 
-    function createCard(status, content) {
-      alert('not implemented yet.');
+    function cardToHtml(card) {
+      return `<div class="card panel panel-default" id='` + card['id'] + `' data-board-id='` + card['board_id'] + `'>
+        <div class="panel-body">
+          <p><strong>#` + card['id'] + `</strong></p>
+          <p class='content'>` + card['content'] + `</p>
+          <div class='pull-right'>
+            <button type="button" class="btn btn-xs btn-default edit-card">
+              <span class='glyphicon glyphicon-pencil' aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-xs btn-default delete-card">
+              <span class='glyphicon glyphicon-trash' aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </div>`;
     };
 
-    function updateCard(id, status, content) {
-      alert('not implemented yet.');
+    function getCard(id, callback) {
+      $.get('/api/cards/' + id, callback);
     };
 
-    function updateCardStatus(el, target, source, sibling) {
-      var $el = $(el);
-      var $target = $(target);
-      var cardId = $el.data('id');
-      var newStatus = target.id;
+    function createCard(board_id, content) {
+      var params = {
+        board_id: board_id,
+        content: content
+      };
 
-      console.log('Missing Server Interaction');
+      $.post('/api/cards', params, function (card) {
+        var cardHtml = cardToHtml(card);
+        $('.cards-board#' + card['board_id']).prepend(cardHtml);
+      });
     };
 
-    function deleteCard(e) {
-      var $el = $(e.target);
-      $el.closest('.card').remove();
-      console.log('Missing Server Interaction');
+    function updateCard(id, board_id, content) {
+      $.ajax({
+        method: "PUT",
+        url: '/api/cards/' + id,
+        data: {
+          board_id: board_id,
+          content: content
+        },
+        success: function(card) {
+          var cardHtml = cardToHtml(card);
+          $('.card#' + card['id']).replaceWith(cardHtml);
+        }
+      })
+    };
+
+    function deleteCard(id) {
+      $.ajax({
+        method: "DELETE",
+        url: '/api/cards/' + id,
+        success: function () {
+          $('.card#' + id).remove();
+        }
+      })
     };
 
     return {
+      getCard: getCard,
       createCard: createCard,
       updateCard: updateCard,
-      updateCardStatus: updateCardStatus,
       deleteCard: deleteCard
     };
 
@@ -39,65 +74,75 @@
 
     return {
       id: $form.find('#id').val(),
-      status: $form.find('#status').val(),
+      board_id: $form.find('#board').val(),
       content: $form.find('#content').val()
     }
   };
 
-  var setCardFormValues = function (id, status, content) {
+  var setCardFormValues = function (id, board_id, content) {
     var $form = $('#cardForm');
 
     $form.find('#id').val(id),
-    $form.find('#status').val(status),
+    $form.find('#board').val(board_id),
     $form.find('#content').val(content)
   };
 
-  var resetCardFormValues = function (status) {
-    setCardFormValues(null, status);
+  var resetCardFormValues = function (board_id) {
+    setCardFormValues(null, board_id, null);
   };
 
   $(document).ready(function () {
 
     var drake = dragula({
-      containers: [
-        document.getElementById('to-do'),
-        document.getElementById('in-progress'),
-        document.getElementById('done')
-      ]
+      containers: $('.cards-board').toArray()
     });
 
-    drake.on('drop', Ganban.updateCardStatus);
+    drake.on('drop', function (el, target, source, sibling) {
+      var cardId = $(el).attr('id');
+      var newBoardId = $(target).attr('id');
+
+      Ganban.updateCard(cardId, newBoardId);
+    });
 
     $('.new-card').on('click', function(e) {
-      var container = $(e.target).closest('.panel').find('.cards-container');
-      var containerId = container.attr('id');
+      var board = $(e.target).closest('.panel').find('.cards-board');
+      var boardId = board.attr('id');
 
-      resetCardFormValues(containerId);
-      $('#cardModal').modal();
-    });
-
-    $('.edit-card').on('click', function (e) {
-      var card = $(e.target).closest('.card');
-
-      var id = card.data('id');
-      var status = card.data('status');
-      var content = card.find('.content').html();
-
-      setCardFormValues(id, status, content);
-      $('#cardModal').modal();
+      resetCardFormValues(boardId);
+      $('#cardModal').modal('show');
     });
 
     $('.save-card').on('click', function() {
       var cardParams = getCardFormValues();
 
-      if (cardParams['id'] == null) {
-        Ganban.createCard(cardParams['status'], cardParams['content']);
+      if (cardParams['id'] === '') {
+        Ganban.createCard(cardParams['board_id'], cardParams['content']);
       } else {
-        Ganban.updateCard(cardParams['id'], ['status'], cardParams['content']);
+        Ganban.updateCard(cardParams['id'], cardParams['board_id'], cardParams['content']);
       }
+      $('#cardModal').modal('hide');
     });
 
-    $('.delete-card').on('click', Ganban.deleteCard);
+    $('.cards-board').on('click', '.edit-card', function(e) {
+      var card = $(e.target).closest('.card');
+
+      var id = card.attr('id');
+      var board_id = card.data('board-id');
+      var content = card.find('.content').html();
+
+      setCardFormValues(id, board_id, content);
+      $('#cardModal').modal('show');
+
+      Ganban.getCard(id, function(card){
+        setCardFormValues(card['id'], card['board_id'], card['content']);
+      });
+    });
+
+    $('.cards-board').on('click', '.delete-card', function(e) {
+      var card = $(e.target).closest('.card');
+      var cardId = card.attr('id');
+      Ganban.deleteCard(cardId);
+    });
 
   });
 

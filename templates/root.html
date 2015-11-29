@@ -19,15 +19,11 @@
 {% block content %}
 <div class='container-fluid'>
   <div class='row'>
-    <div class='col-md-4'>
-      {{ macros.container(containers[0], cards[0]) }}
-    </div>
-    <div class='col-md-4'>
-      {{ macros.container(containers[1], cards[1]) }}
-    </div>
-    <div class='col-md-4'>
-      {{ macros.container(containers[2], cards[2]) }}
-    </div>
+    {% for b in boards %}
+      <div class='col-md-4'>
+        {{ macros.board(b) }}
+      </div>
+    {% endfor %}
   </div>
 </div>
 
@@ -44,10 +40,10 @@
           <input type='hidden' id='id'></input>
           <div class="form-group">
             <lable for='cardStatus'>Status:</label>
-            <select class="form-control" id='status' disabled>
-              <option value='to-do'>To do</option>
-              <option value='in-progress'>In progress</option>
-              <option value='done'>Done</option>
+            <select class="form-control" id='board' disabled>
+              {% for b in boards %}
+                <option value='{{ b.key.id() }}'>{{ b.name }}</option>
+              {% endfor %}
             </select>
           </div>
           <div class="form-group">

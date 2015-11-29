@@ -1,13 +1,13 @@
-{% macro container(container, cards) -%}
+{% macro board(board) -%}
   <div class="panel panel-default">
     <div class="panel-heading">
-      <h3 class="panel-title">{{ container.name }}</h3>
+      <h3 class="panel-title">{{ board.name }}</h3>
       <button type="button" class="btn btn-xs btn-default pull-right new-card">
         <span class='glyphicon glyphicon-plus' aria-hidden="true"></span>
       </button>
     </div>
-    <div id='{{ container.id }}' class="panel-body cards-container">
-      {% for c in cards %}
+    <div id='{{ board.key.id() }}' class="panel-body cards-board">
+      {% for c in board.cards %}
         {{ card(c) }}
       {% endfor %}
     </div>
@@ -15,9 +15,9 @@
 {%- endmacro %}
 
 {% macro card(card) -%}
-  <div class="card panel panel-default" data-id='{{ card.id }}' data-status='{{ card.status }}'>
+  <div class="card panel panel-default" id='{{ card.id }}' data-board-id='{{ card.board_id }}'>
     <div class="panel-body">
-      <p><strong>#{{ card.id }}</strong></p>
+      <p><strong>#{{ card.key.id() }}</strong></p>
       <p class='content'>{{ card.content }}</p>
       <div class='pull-right'>
         <button type="button" class="btn btn-xs btn-default edit-card">
