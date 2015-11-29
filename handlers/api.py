@@ -1,40 +1,59 @@
 import webapp2, json, logging
 
 from models.card import *
+from models.board import *
+
 from google.appengine.ext import ndb
 
 json.JSONEncoder.default = lambda self, obj: (obj.isoformat() if hasattr(obj, 'isoformat') else None)
 
-class ApiHandler(webapp2.RequestHandler):
+class Helpers(object):
+    def get_board(self, board_id):
+        return ndb.Key('Board', int(board_id)).get()
+
+    def get_card(self, card_id):
+        return ndb.Key('Card', int(card_id)).get()
+
+class ApiHandler(Helpers, webapp2.RequestHandler):
     def dispatch(self):
         super(ApiHandler, self).dispatch()
         self.response.headers['Content-Type'] = 'application/json'
 
 class GetCardHandler(ApiHandler):
     def get(self, card_id):
-        card = ndb.Key('Card', int(card_id)).get().to_dict()
+        card = self.get_card(card_id)
 
-        self.response.out.write(json.dumps(card))
+        self.response.out.write(json.dumps(card.to_dict()))
 
-class GetCardListHandler(webapp2.RequestHandler):
-    def get(self):
-        cards = [card.to_dict() for card in Card.query()]
+class UpdateCardHandler(ApiHandler):
+    def put(self, card_id):
+        card = self.get_card(card_id)
+        content = self.request.get('content')
+        board_id = self.request.get('board_id')
 
-        self.response.out.write(json.dumps(cards))
+        if content:
+            card.content = content
 
-class UpdateCardHandler(webapp2.RequestHandler):
-    def put(self):
-        return ''
+        if board_id:
+            card.board = self.get_board(board_id).key
 
-class CreateCardHandler(webapp2.RequestHandler):
-    def post(self):
-        card = Card(status=self.request.get('status'), content=self.request.get('status'))
         card.put()
 
         self.response.out.write(json.dumps(card.to_dict()))
 
-class DestroyCardHandler(webapp2.RequestHandler):
-    def destroy(self, card_id):
-        ndb.Key('Card', int(card_id)).delete()
+class CreateCardHandler(ApiHandler):
+    def post(self):
+        board = self.get_board(self.request.get('board_id'))
+
+        card = Card(board = board.key, content = self.request.get('content'))
+        card.put()
+
+        self.response.out.write(json.dumps(card.to_dict()))
+
+class DestroyCardHandler(ApiHandler):
+    def delete(self, card_id):
+        card = self.get_card(card_id)
+
+        card.key.delete()
 
         self.response.out.write(json.dumps({}))
