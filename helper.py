@@ -1,3 +1,5 @@
+import json
+
 from google.appengine.api import mail
 from google.appengine.ext import ndb
 from google.appengine.api import users
