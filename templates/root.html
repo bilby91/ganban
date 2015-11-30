@@ -10,7 +10,7 @@
       </a>
     </div>
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-5">
-      <p class="navbar-text navbar-right">{{ user.nickname() }} | <a href="{{logout_url}}" class="navbar-link">Logout</a></p>
+      <p class="navbar-text navbar-right">{{ user.username }} | <a href="{{logout_url}}" class="navbar-link">Logout</a></p>
     </div>
   </div>
 </nav>
@@ -59,4 +59,14 @@
     </div>
   </div>
 </div>
+<script type="text/javascript" src="/_ah/channel/jsapi"></script>
+{% endblock %}
+
+{% block js %}
+  {{ super() }}
+  <script>
+    channel = new goog.appengine.Channel('{{ token }}');
+    socket = channel.open();
+    socket.onmessage = Ganban.onChannelMessage;
+  </script>
 {% endblock %}

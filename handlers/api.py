@@ -2,6 +2,8 @@ import webapp2, json, logging
 from google.appengine.api import mail
 from google.appengine.ext import ndb
 from google.appengine.api import users
+from google.appengine.api import memcache
+from google.appengine.api import channel
 
 from settings import EMAIL_SENDER
 from models.card import *
@@ -36,6 +38,15 @@ class Helpers(object):
 
         message.send()
 
+    def send_channel_message(self, action, card):
+        for u in User.query().fetch():
+            token = memcache.get(str(u.key.id()))
+            dic = {
+                'action' : action,
+                'card' : card.to_dict()
+            }
+            channel.send_message(token, json.dumps(dic))
+
 class ApiHandler(Helpers, webapp2.RequestHandler):
     def dispatch(self):
         super(ApiHandler, self).dispatch()
@@ -61,6 +72,7 @@ class UpdateCardHandler(ApiHandler):
 
         card.put()
 
+        self.send_channel_message('update', card)
         self.response.out.write(json.dumps(card.to_dict()))
 
 class CreateCardHandler(ApiHandler):
@@ -72,6 +84,7 @@ class CreateCardHandler(ApiHandler):
 
         self.send_new_card_email(card)
 
+        self.send_channel_message('create', card)
         self.response.out.write(json.dumps(card.to_dict()))
 
 class DestroyCardHandler(ApiHandler):
@@ -80,4 +93,5 @@ class DestroyCardHandler(ApiHandler):
 
         card.key.delete()
 
+        self.send_channel_message('destroy', card)
         self.response.out.write(json.dumps({}))
