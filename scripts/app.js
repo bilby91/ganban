@@ -50,8 +50,8 @@ var Ganban = (function () {
   };
 
   function replaceCard(card) {
-    var cardHtml = cardToHtml(card);
-    $('.card#' + card['id']).replaceWith(cardHtml);
+    $('.card#' + card['id']).remove();
+    addCard(card);
   };
 
   function deleteCard(id) {
@@ -68,6 +68,7 @@ var Ganban = (function () {
 
   function onChannelMessage(message) {
     var message = JSON.parse(message.data);
+
     switch(message.action) {
       case 'create':
         addCard(message.card);
@@ -75,7 +76,7 @@ var Ganban = (function () {
       case 'update':
         replaceCard(message.card);
         break;
-      case 'delete':
+      case 'destroy':
         removeCard(message.card.id);
         break;
     }

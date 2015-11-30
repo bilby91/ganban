@@ -27,6 +27,7 @@ class RootHandler(webapp2.RequestHandler):
 
             token = channel.create_channel(str(active_user.key.id()))
             memcache.add(key=str(active_user.key.id()), value=token)
+
             template_vars = {
                 'user' : active_user,
                 'token' : token,

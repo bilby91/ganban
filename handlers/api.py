@@ -1,4 +1,5 @@
-import webapp2, json, logging
+import webapp2, json, logging, helper
+
 from google.appengine.api import mail
 from google.appengine.ext import ndb
 from google.appengine.api import users
@@ -13,14 +14,6 @@ from models.user import *
 json.JSONEncoder.default = lambda self, obj: (obj.isoformat() if hasattr(obj, 'isoformat') else None)
 
 class Helpers(object):
-    def get_board(self, board_id):
-        return ndb.Key('Board', int(board_id)).get()
-
-    def get_card(self, card_id):
-        return ndb.Key('Card', int(card_id)).get()
-
-    def current_ganban_user(self):
-        return User.query(User.google_id == users.get_current_user().user_id()).fetch(1)[0]
 
     def send_new_card_email(self, card):
         emails = User.all_emails()
@@ -28,8 +21,9 @@ class Helpers(object):
         message = mail.EmailMessage(sender = EMAIL_SENDER, subject = "New card created.")
         message.to = emails
         message.body = """
-        A new card was created in the Board %s
+        A new card was created.
 
+        Board: %s
         Author: %s
         Content: %s
 
@@ -39,15 +33,17 @@ class Helpers(object):
         message.send()
 
     def send_channel_message(self, action, card):
-        for u in User.query().fetch():
+        for u in User.query(User.key != self.current_ganban_user().key).fetch():
             token = memcache.get(str(u.key.id()))
-            dic = {
-                'action' : action,
-                'card' : card.to_dict()
-            }
-            channel.send_message(token, json.dumps(dic))
+            if token:
+                dic = {
+                    'action' : action,
+                    'card' : card.to_dict()
+                }
 
-class ApiHandler(Helpers, webapp2.RequestHandler):
+                channel.send_message(token, json.dumps(dic))
+
+class ApiHandler(Helpers, helper.Entities, webapp2.RequestHandler):
     def dispatch(self):
         super(ApiHandler, self).dispatch()
         self.response.headers['Content-Type'] = 'application/json'
