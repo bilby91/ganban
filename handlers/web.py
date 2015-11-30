@@ -11,12 +11,8 @@ class RootHandler(webapp2.RequestHandler):
         user = users.get_current_user()
 
         if user:
-            # Create a query for searching the User Entities
-            query = User.query()
-
             # Filter by the google appengine user id property.
-            query.filter(User.google_id == user.user_id())
-            active_user = query.fetch(1)
+            active_user = User.query(User.google_id == user.user_id()).fetch(1)
 
             if not active_user:
                 # If we couldn't find a user it means that is the first time it uses the application.
