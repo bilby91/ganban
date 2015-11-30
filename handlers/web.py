@@ -21,7 +21,7 @@ class RootHandler(webapp2.RequestHandler):
                 # We just need to create a new entity with the get_current_user() information.
                 active_user = User(email = user.email(), username = user.nickname(), google_id = user.user_id())
                 active_user.put()
-                logging.info("New user created. Email address is: %s", new_user.email)
+                logging.info("New user created. Email address is: %s", active_user.email)
             else:
                 active_user = active_user[0]
 

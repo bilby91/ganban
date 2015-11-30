@@ -50,8 +50,19 @@ var Ganban = (function () {
   };
 
   function replaceCard(card) {
-    $('.card#' + card['id']).remove();
-    addCard(card);
+    var $card = $('.card#' + card.id);
+
+    console.log($card);
+    console.log(card);
+    console.log($card.data('board-id'));
+
+    if ($card.data('board-id') == card.board_id) {
+      var cardHtml = cardToHtml(card);
+      $card.replaceWith(cardHtml);
+    } else {
+      $('.card#' + card['id']).remove();
+      addCard(card);
+    }
   };
 
   function deleteCard(id) {

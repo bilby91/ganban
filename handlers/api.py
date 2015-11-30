@@ -13,37 +13,7 @@ from models.user import *
 
 json.JSONEncoder.default = lambda self, obj: (obj.isoformat() if hasattr(obj, 'isoformat') else None)
 
-class Helpers(object):
-
-    def send_new_card_email(self, card):
-        emails = User.all_emails()
-
-        message = mail.EmailMessage(sender = EMAIL_SENDER, subject = "New card created.")
-        message.to = emails
-        message.body = """
-        A new card was created.
-
-        Board: %s
-        Author: %s
-        Content: %s
-
-        The Ganban Team
-        """ % (card.board().name, self.current_ganban_user().username, card.content)
-
-        message.send()
-
-    def send_channel_message(self, action, card):
-        for u in User.query(User.key != self.current_ganban_user().key).fetch():
-            token = memcache.get(str(u.key.id()))
-            if token:
-                dic = {
-                    'action' : action,
-                    'card' : card.to_dict()
-                }
-
-                channel.send_message(token, json.dumps(dic))
-
-class ApiHandler(Helpers, helper.Entities, webapp2.RequestHandler):
+class ApiHandler(helper.Entity, helper.Mailer, helper.Channel, webapp2.RequestHandler):
     def dispatch(self):
         super(ApiHandler, self).dispatch()
         self.response.headers['Content-Type'] = 'application/json'
@@ -68,6 +38,8 @@ class UpdateCardHandler(ApiHandler):
 
         card.put()
 
+        logging.info("Card with id: %s updated.", card.key.id())
+
         self.send_channel_message('update', card)
         self.response.out.write(json.dumps(card.to_dict()))
 
@@ -80,6 +52,8 @@ class CreateCardHandler(ApiHandler):
 
         self.send_new_card_email(card)
 
+        logging.info("Card with id: %s created.", card.key.id())
+
         self.send_channel_message('create', card)
         self.response.out.write(json.dumps(card.to_dict()))
 
@@ -88,6 +62,8 @@ class DestroyCardHandler(ApiHandler):
         card = self.get_card(card_id)
 
         card.key.delete()
+
+        logging.info("Card with id: %s deleted.", card_id)
 
         self.send_channel_message('destroy', card)
         self.response.out.write(json.dumps({}))

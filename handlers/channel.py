@@ -1,11 +1,11 @@
-import webapp2, logging, helper
+import webapp2, logging
 
 from google.appengine.api import channel
 from google.appengine.api import memcache
 from google.appengine.api import users
 from models.user import *
 
-class ConnectedHandler(helper.Entities, webapp2.RequestHandler):
+class ConnectedHandler(webapp2.RequestHandler):
     def post(self):
         user = ndb.Key('User', int(self.request.get('from'))).get()
 

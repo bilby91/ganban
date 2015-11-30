@@ -15,7 +15,7 @@
 {%- endmacro %}
 
 {% macro card(card) -%}
-  <div class="card panel panel-default" id='{{ card.key.id() }}' data-board-id='{{ card.board_id }}'>
+  <div class="card panel panel-default" id='{{ card.key.id() }}' data-board-id='{{ card.board_key.id() }}'>
     <div class="panel-body">
       <p><strong>#{{ card.key.id() }}</strong></p>
       <p class='content'>{{ card.content }}</p>
