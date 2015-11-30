@@ -39,8 +39,8 @@
         <form id='cardForm'>
           <input type='hidden' id='id'></input>
           <div class="form-group">
-            <lable for='cardStatus'>Status:</label>
-            <select class="form-control" id='board' disabled>
+            <lable for='board'>Board:</label>
+            <select class="form-control" id='board'>
               {% for b in boards %}
                 <option value='{{ b.key.id() }}'>{{ b.name }}</option>
               {% endfor %}
