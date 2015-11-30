@@ -28,7 +28,7 @@ class RootHandler(webapp2.RequestHandler):
             template_vars = {
                 'user' : user,
                 'logout_url' : users.create_logout_url('/welcome'),
-                'boards' : Board.query()
+                'boards' : Board.query().order(Board.created_at)
             }
             template = JINJA_ENVIRONMENT.get_template('root.html')
             self.response.write(template.render(template_vars))

@@ -67,7 +67,7 @@ class CreateCardHandler(ApiHandler):
     def post(self):
         board = self.get_board(self.request.get('board_id'))
 
-        card = Card(board_key = board.key, content = self.request.get('content'))
+        card = Card(board_key = board.key, content = self.request.get('content'), author_key = self.current_ganban_user().key)
         card.put()
 
         self.send_new_card_email(card)

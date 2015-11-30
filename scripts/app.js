@@ -7,6 +7,9 @@
         <div class="panel-body">
           <p><strong>#` + card['id'] + `</strong></p>
           <p class='content'>` + card['content'] + `</p>
+          <div class='pull-left'>
+            <span class="text-muted">` + card['author_email'] + `</span>
+          </div>
           <div class='pull-right'>
             <button type="button" class="btn btn-xs btn-default edit-card">
               <span class='glyphicon glyphicon-pencil' aria-hidden="true"></span>
