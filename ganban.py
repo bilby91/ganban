@@ -7,13 +7,13 @@ from models.board import *
 
 # We need to initialize the default board on the application startup.
 # We search for them, in case they are not present, we create them.
-if (Board.query(Board.name == 'To Do').fetch(1).count(1) == 0):
+if not Board.query(Board.name == 'To Do').fetch(1):
     Board(name = 'To Do').put()
 
-if (Board.query(Board.name == 'In Progress').fetch(1).count(1) == 0):
+if not Board.query(Board.name == 'In Progress').fetch(1):
     Board(name = 'In Progress').put()
 
-if (Board.query(Board.name == 'Done').fetch(1).count(1) == 0):
+if not Board.query(Board.name == 'Done').fetch(1):
     Board(name = 'Done').put()
 
 # Configure the WSGIApplication routes
