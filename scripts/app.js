@@ -29,11 +29,12 @@ var Ganban = (function () {
       board_id: board_id,
       content: content
     };
+    $.post('/api/cards', params, addCard);
+  };
 
-    $.post('/api/cards', params, function (card) {
-      var cardHtml = cardToHtml(card);
-      $('.cards-board#' + card['board_id']).prepend(cardHtml);
-    });
+  function addCard(card) {
+    var cardHtml = cardToHtml(card);
+    $('.cards-board#' + card['board_id']).prepend(cardHtml);
   };
 
   function updateCard(id, board_id, content) {
@@ -44,26 +45,40 @@ var Ganban = (function () {
         board_id: board_id,
         content: content
       },
-      success: function(card) {
-        var cardHtml = cardToHtml(card);
-        $('.card#' + card['id']).replaceWith(cardHtml);
-      }
+      success: replaceCard
     })
+  };
+
+  function replaceCard(card) {
+    var cardHtml = cardToHtml(card);
+    $('.card#' + card['id']).replaceWith(cardHtml);
   };
 
   function deleteCard(id) {
     $.ajax({
       method: "DELETE",
       url: '/api/cards/' + id,
-      success: function () {
-        $('.card#' + id).remove();
-      }
+      success: function () { removeCard(id) }
     })
+  };
+
+  function removeCard(id) {
+    $('.card#' + id).remove();
   };
 
   function onChannelMessage(message) {
     var message = JSON.parse(message.data);
-    console.log(message);
+    switch(message.action) {
+      case 'create':
+        addCard(message.card);
+        break;
+      case 'update':
+        replaceCard(message.card);
+        break;
+      case 'delete':
+        removeCard(message.card.id);
+        break;
+    }
   };
 
   return {
