@@ -5,7 +5,7 @@ from google.appengine.api import users
 from google.appengine.api import memcache
 from google.appengine.api import channel
 
-from settings import EMAIL_SENDER
+import settings
 from models.card import Card
 from models.board import Board
 from models.user import User
@@ -27,7 +27,7 @@ class Mailer:
     def send_new_card_email(self, card):
         emails = User.all_emails()
 
-        message = mail.EmailMessage(sender=EMAIL_SENDER, subject="New card created.")
+        message = mail.EmailMessage(sender=settings.EMAIL_SENDER, subject="New card created.")
         message.to = emails
         message.body = """
         A new card was created.

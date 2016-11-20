@@ -1,4 +1,5 @@
 import webapp2, json, logging, helper
+import settings
 
 from models.card import Card
 
@@ -47,7 +48,8 @@ class CreateCardHandler(ApiHandler):
                     author_key=self.current_ganban_user().key)
         card.put()
 
-        self.send_new_card_email(card)
+        if settings.SEND_EMAILS:
+            self.send_new_card_email(card)
 
         logging.info("Card with id: %s created.", card.key.id())
 
