@@ -1,28 +1,23 @@
 import webapp2, json, logging, helper
+import settings
 
-from google.appengine.api import mail
-from google.appengine.ext import ndb
-from google.appengine.api import users
-from google.appengine.api import memcache
-from google.appengine.api import channel
-
-from settings import EMAIL_SENDER
-from models.card import *
-from models.board import *
-from models.user import *
+from models.card import Card
 
 json.JSONEncoder.default = lambda self, obj: (obj.isoformat() if hasattr(obj, 'isoformat') else None)
+
 
 class ApiHandler(helper.Entity, helper.Mailer, helper.Channel, webapp2.RequestHandler):
     def dispatch(self):
         super(ApiHandler, self).dispatch()
         self.response.headers['Content-Type'] = 'application/json'
 
+
 class GetCardHandler(ApiHandler):
     def get(self, card_id):
         card = self.get_card(card_id)
 
         self.response.out.write(json.dumps(card.to_dict()))
+
 
 class UpdateCardHandler(ApiHandler):
     def put(self, card_id):
@@ -43,19 +38,24 @@ class UpdateCardHandler(ApiHandler):
         self.send_channel_message('update', card)
         self.response.out.write(json.dumps(card.to_dict()))
 
+
 class CreateCardHandler(ApiHandler):
     def post(self):
         board = self.get_board(self.request.get('board_id'))
 
-        card = Card(board_key = board.key, content = self.request.get('content'), author_key = self.current_ganban_user().key)
+        card = Card(board_key=board.key,
+                    content=self.request.get('content'),
+                    author_key=self.current_ganban_user().key)
         card.put()
 
-        self.send_new_card_email(card)
+        if settings.SEND_EMAILS:
+            self.send_new_card_email(card)
 
         logging.info("Card with id: %s created.", card.key.id())
 
         self.send_channel_message('create', card)
         self.response.out.write(json.dumps(card.to_dict()))
+
 
 class DestroyCardHandler(ApiHandler):
     def delete(self, card_id):

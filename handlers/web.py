@@ -1,11 +1,11 @@
-import webapp2, random, logging
+import webapp2, logging
 
 from settings import JINJA_ENVIRONMENT
 from google.appengine.api import channel
 from google.appengine.api import memcache
 from google.appengine.api import users
-from models.user import *
-from models.board import *
+from models.user import User
+from models.board import Board
 
 
 class RootHandler(webapp2.RequestHandler):
@@ -19,7 +19,7 @@ class RootHandler(webapp2.RequestHandler):
             if not active_user:
                 # If we couldn't find a user it means that is the first time it uses the application.
                 # We just need to create a new entity with the get_current_user() information.
-                active_user = User(email = user.email(), username = user.nickname(), google_id = user.user_id())
+                active_user = User(email=user.email(), username=user.nickname(), google_id=user.user_id())
                 active_user.put()
                 logging.info("New user created. Email address is: %s", active_user.email)
             else:
@@ -29,10 +29,10 @@ class RootHandler(webapp2.RequestHandler):
             memcache.add(key=str(active_user.key.id()), value=token)
 
             template_vars = {
-                'user' : active_user,
-                'token' : token,
-                'logout_url' : users.create_logout_url('/welcome'),
-                'boards' : Board.query().order(Board.created_at)
+                'user': active_user,
+                'token': token,
+                'logout_url': users.create_logout_url('/welcome'),
+                'boards': Board.query().order(Board.created_at)
 
             }
             template = JINJA_ENVIRONMENT.get_template('root.html')
