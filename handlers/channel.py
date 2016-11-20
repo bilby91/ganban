@@ -10,6 +10,7 @@ class ConnectedHandler(webapp2.RequestHandler):
 
         logging.info('User %s has connected.', user.email)
 
+
 class DisconnectedHandler(webapp2.RequestHandler):
     def post(self):
         user = ndb.Key('User', int(self.request.get('from'))).get()

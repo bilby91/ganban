@@ -17,14 +17,14 @@ class Card(JSON, ndb.Model):
         return self.author_key.get()
 
     def to_dict(self):
-        dictionary = super(Card ,self).to_dict()
+        dictionary = super(Card, self).to_dict()
         dictionary.pop('board_key', None)
         dictionary.pop('author_key', None)
 
-        if not self.board_key == None:
+        if self.board_key is not None:
             dictionary['board_id'] = self.board_key.id()
 
-        if not self.author_key == None:
+        if self.author_key is not None:
             dictionary['author_email'] = self.author().email
 
         return dictionary
