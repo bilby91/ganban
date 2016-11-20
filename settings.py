@@ -1,4 +1,4 @@
-import os, sys, urllib, jinja2
+import os, jinja2
 
 EMAIL_SENDER = "Ganban <team@ganban-1130.appspotmail.com>"
 

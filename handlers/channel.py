@@ -1,9 +1,8 @@
 import webapp2, logging
 
-from google.appengine.api import channel
 from google.appengine.api import memcache
-from google.appengine.api import users
-from models.user import *
+from google.appengine.ext import ndb
+
 
 class ConnectedHandler(webapp2.RequestHandler):
     def post(self):

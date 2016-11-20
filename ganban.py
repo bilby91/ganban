@@ -1,10 +1,10 @@
-import webapp2, logging
+import webapp2
 
 from handlers import web
 from handlers import api
 from handlers import channel
 
-from models.board import *
+from models.board import Board
 
 # We need to initialize the default board on the application startup.
 # We search for them, in case they are not present, we create them.

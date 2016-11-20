@@ -1,11 +1,11 @@
-import webapp2, random, logging
+import webapp2, logging
 
 from settings import JINJA_ENVIRONMENT
 from google.appengine.api import channel
 from google.appengine.api import memcache
 from google.appengine.api import users
-from models.user import *
-from models.board import *
+from models.user import User
+from models.board import Board
 
 
 class RootHandler(webapp2.RequestHandler):

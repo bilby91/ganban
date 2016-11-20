@@ -1,15 +1,7 @@
 import webapp2, json, logging, helper
 
-from google.appengine.api import mail
-from google.appengine.ext import ndb
-from google.appengine.api import users
-from google.appengine.api import memcache
-from google.appengine.api import channel
-
 from settings import EMAIL_SENDER
-from models.card import *
-from models.board import *
-from models.user import *
+from models.card import Card
 
 json.JSONEncoder.default = lambda self, obj: (obj.isoformat() if hasattr(obj, 'isoformat') else None)
 

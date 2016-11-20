@@ -1,13 +1,14 @@
 from google.appengine.ext import ndb
-from models.user import *
-from models.json import *
+from models.user import User
+from models.json import JSON
+
 
 class Card(JSON, ndb.Model):
-    content = ndb.StringProperty();
-    board_key = ndb.KeyProperty(kind = 'Board')
-    author_key = ndb.KeyProperty(kind = User)
-    created_at = ndb.DateTimeProperty(auto_now_add = True)
-    updated_at = ndb.DateTimeProperty(auto_now = True)
+    content = ndb.StringProperty()
+    board_key = ndb.KeyProperty(kind='Board')
+    author_key = ndb.KeyProperty(kind=User)
+    created_at = ndb.DateTimeProperty(auto_now_add=True)
+    updated_at = ndb.DateTimeProperty(auto_now=True)
 
     def board(self):
         return self.board_key.get()

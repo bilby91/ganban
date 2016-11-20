@@ -1,15 +1,16 @@
 import json
 
 from google.appengine.api import mail
-from google.appengine.ext import ndb
 from google.appengine.api import users
 from google.appengine.api import memcache
 from google.appengine.api import channel
+from google.appengine.ext import ndb
 
 from settings import EMAIL_SENDER
-from models.card import *
-from models.board import *
-from models.user import *
+from models.card import Card
+from models.board import Board
+from models.user import User
+
 
 class Entity:
     def get_board(self, board_id):
