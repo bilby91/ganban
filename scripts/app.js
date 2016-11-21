@@ -1,12 +1,15 @@
 var Ganban = (function () {
 
   function cardToHtml(card) {
-    return `<div class="card panel panel-default" id='` + card['id'] + `' data-board-id='` + card['board_id'] + `'>
+    return `<div class="card panel panel-default" id='` + card.id + `'>
+      <input type="hidden" id="id" value='` + card.id + `'></input>
+      <input type="hidden" id="board" value='` + card.board_id + `'></input>
+      <input type="hidden" id="content" value='` + card.content + `'></input>
       <div class="panel-body">
-        <p><strong>#` + card['id'] + `</strong></p>
-        <p class='content'>` + card['content'] + `</p>
+        <p><strong>#` + card.id + `</strong></p>
+        <p class='content'>` + card.content + `</p>
         <div class='pull-left'>
-          <span class="text-muted">` + card['author_email'] + `</span>
+          <span class="text-muted">` + card.author_email + `</span>
         </div>
         <div class='pull-right'>
           <button type="button" class="btn btn-xs btn-default edit-card">
@@ -20,16 +23,20 @@ var Ganban = (function () {
     </div>`;
   };
 
+  function initCards() {
+    $.get('/api/cards', function(cards){
+        for(card in cards) {
+            addCard(cards[card]);
+        }
+    });
+  }
+
   function getCard(id, callback) {
     $.get('/api/cards/' + id, callback);
   };
 
-  function createCard(board_id, content) {
-    var params = {
-      board_id: board_id,
-      content: content
-    };
-    $.post('/api/cards', params, addCard);
+  function createCard(card) {
+    $.post('/api/cards', card, addCard);
   };
 
   function addCard(card) {
@@ -37,24 +44,17 @@ var Ganban = (function () {
     $('.cards-board#' + card['board_id']).prepend(cardHtml);
   };
 
-  function updateCard(id, board_id, content) {
+  function updateCard(card) {
     $.ajax({
       method: "PUT",
-      url: '/api/cards/' + id,
-      data: {
-        board_id: board_id,
-        content: content
-      },
+      url: '/api/cards/' + card.id,
+      data: card,
       success: replaceCard
     })
   };
 
   function replaceCard(card) {
     var $card = $('.card#' + card.id);
-
-    console.log($card);
-    console.log(card);
-    console.log($card.data('board-id'));
 
     if ($card.data('board-id') == card.board_id) {
       var cardHtml = cardToHtml(card);
@@ -94,6 +94,7 @@ var Ganban = (function () {
   };
 
   return {
+    initCards: initCards,
     getCard: getCard,
     createCard: createCard,
     updateCard: updateCard,
@@ -103,26 +104,35 @@ var Ganban = (function () {
 
 })();
 
-var getCardFormValues = function () {
+function Card(board_id, id, content) {
+    this.board_id = board_id;
+    this.id = id;
+    this.content = content;
+}
+
+Card.getCardFromElement = function(el) {
+    // We're putting this function on Card because if we make any changes to
+    // Card (by adding new properties), we HAVE to update this function as well
+
+    $form = $(el);
+    return new Card(
+        $form.find('#board').val(),
+        $form.find('#id').val(),
+        $form.find('#content').val()
+    );
+}
+
+var setCardFormValues = function (card) {
   var $form = $('#cardForm');
 
-  return {
-    id: $form.find('#id').val(),
-    board_id: $form.find('#board').val(),
-    content: $form.find('#content').val()
-  }
+  $form.find('#id').val(card.id),
+  $form.find('#board').val(card.board_id),
+  $form.find('#content').val(card.content)
 };
 
-var setCardFormValues = function (id, board_id, content) {
-  var $form = $('#cardForm');
-
-  $form.find('#id').val(id),
-  $form.find('#board').val(board_id),
-  $form.find('#content').val(content)
-};
 
 var resetCardFormValues = function (board_id) {
-  setCardFormValues(null, board_id, null);
+  setCardFormValues(new Card(board_id, null, null));
 };
 
 $(document).ready(function () {
@@ -132,10 +142,10 @@ $(document).ready(function () {
   });
 
   drake.on('drop', function (el, target, source, sibling) {
-    var cardId = $(el).attr('id');
-    var newBoardId = $(target).attr('id');
+    var card = Card.getCardFromElement(el);
+    card.board_id = $(target).attr('id');
 
-    Ganban.updateCard(cardId, newBoardId);
+    Ganban.updateCard(card);
   });
 
   $('.new-card').on('click', function(e) {
@@ -147,35 +157,34 @@ $(document).ready(function () {
   });
 
   $('.save-card').on('click', function() {
-    var cardParams = getCardFormValues();
+    var card = Card.getCardFromElement($('#cardForm'));
 
-    if (cardParams['id'] === '') {
-      Ganban.createCard(cardParams['board_id'], cardParams['content']);
+    if (card.id === '') {
+      Ganban.createCard(card);
     } else {
-      Ganban.updateCard(cardParams['id'], cardParams['board_id'], cardParams['content']);
+      Ganban.updateCard(card);
     }
     $('#cardModal').modal('hide');
   });
 
   $('.cards-board').on('click', '.edit-card', function(e) {
-    var card = $(e.target).closest('.card');
+    var cardEl = $(e.target).closest('.card');
 
-    var id = card.attr('id');
-    var board_id = card.data('board-id');
-    var content = card.find('.content').html();
+    card = Card.getCardFromElement(cardEl);
 
-    setCardFormValues(id, board_id, content);
+    setCardFormValues(card);
     $('#cardModal').modal('show');
 
-    Ganban.getCard(id, function(card){
-      setCardFormValues(card['id'], card['board_id'], card['content']);
+    Ganban.getCard(card.id, function(card){
+      setCardFormValues(card);
     });
   });
 
   $('.cards-board').on('click', '.delete-card', function(e) {
-    var card = $(e.target).closest('.card');
-    var cardId = card.attr('id');
-    Ganban.deleteCard(cardId);
+    var cardEl = $(e.target).closest('.card');
+    card = Card.getCardFromElement(cardEl);
+    Ganban.deleteCard(card.id);
   });
 
+  Ganban.initCards();
 });

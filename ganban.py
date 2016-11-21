@@ -21,7 +21,7 @@ if not Board.query(Board.name == 'Done').fetch(1):
 app = webapp2.WSGIApplication([
     webapp2.Route(r'/', handler=web.RootHandler, methods=['GET']),
     webapp2.Route(r'/welcome', handler=web.WelcomeHandler, methods=['GET']),
-    webapp2.Route(r'/api/cards', handler=api.CreateCardHandler, methods=['POST']),
+    webapp2.Route(r'/api/cards', handler=api.CardHandler, methods=['POST', 'GET']),
     webapp2.Route(r'/api/cards/<card_id>', handler=api.GetCardHandler, methods=['GET']),
     webapp2.Route(r'/api/cards/<card_id>', handler=api.UpdateCardHandler, methods=['PUT']),
     webapp2.Route(r'/api/cards/<card_id>', handler=api.DestroyCardHandler, methods=['DELETE']),
