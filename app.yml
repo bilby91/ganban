@@ -10,7 +10,8 @@ libraries:
 
 handlers:
   - url: /favicon.ico
-    static_dir: images/favicon.ico
+    static_files: images/favicon.ico
+    upload: images/favicon.ico
 
   - url: /scripts
     static_dir: scripts
