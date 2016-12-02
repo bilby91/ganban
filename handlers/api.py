@@ -39,8 +39,14 @@ class UpdateCardHandler(ApiHandler):
         self.response.out.write(json.dumps(card.to_dict()))
 
 
-class CreateCardHandler(ApiHandler):
+class CardHandler(ApiHandler):
+    def get(self):
+        ''' Get all cards '''
+        cards = [card.to_dict() for card in Card.query()]
+        self.response.out.write(json.dumps(cards))
+
     def post(self):
+        ''' Create new card '''
         board = self.get_board(self.request.get('board_id'))
 
         card = Card(board_key=board.key,
